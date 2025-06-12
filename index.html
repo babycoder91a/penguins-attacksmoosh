@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Penguin vs Zombies Game - Enhanced Abilities with Death Animation</title>
+<title>Penguin vs Zombies Game - Enhanced Abilities</title>
 <style>
 :root {
   --penguin-face: white;
@@ -12,7 +12,7 @@
   --zombie-green: #6c9960;
   --zombie-dark: #445a3b;
   --zombie-stunned: #d94f4f;
-  --powerup-color: #ffcc00; /* Power-ups color */
+  --powerup-color: #ffcc00;
 }
 
 /* Reset and base */
@@ -82,7 +82,7 @@ html, body {
   bottom: 60px;
   left: 50px;
   z-index: 5;
-  transition: bottom 0.3s ease;
+  transition: bottom 0.3s ease, transform 0.3s ease;
   cursor: pointer;
 }
 
@@ -156,15 +156,6 @@ html, body {
   right: 25%;
 }
 
-.eye-lid {
-  width: 150%;
-  height: 100%;
-  background-color: var(--penguin-face);
-  top: 25%;
-  left: -23%;
-  border-radius: 50%;
-}
-
 .blush {
   width: 15%;
   height: 10%;
@@ -211,18 +202,6 @@ html, body {
   border-radius: 80% 80% 100% 100%;
   top: 40%;
   left: 23.5%;
-}
-
-.penguin-body::before {
-  content: "";
-  position: absolute;
-  width: 50%;
-  height: 45%;
-  background-color: var(--penguin-skin);
-  top: 10%;
-  left: 25%;
-  border-radius: 0% 0% 100% 100%;
-  opacity: 70%;
 }
 
 .arm {
@@ -359,46 +338,6 @@ html, body {
   border-radius: 0 0 12px 12px;
 }
 
-/* Dead zombie style with X eyes */
-.zombie.dead {
-  animation: fadeOut 1s forwards;
-  background-color: #a52a2a; /* dark red background */
-  cursor: default;
-  box-shadow: none;
-  filter: brightness(0.7);
-  position: relative;
-}
-
-/* X marks for eyes */
-.zombie.dead::before,
-.zombie.dead::after {
-  content: "×";
-  position: absolute;
-  color: white;
-  font-weight: bold;
-  font-size: 18px;
-  top: 12px;
-  user-select: none;
-  pointer-events: none;
-  text-shadow: 0 0 3px black;
-}
-
-.zombie.dead::before {
-  left: 10px; /* position over left eye */
-}
-
-.zombie.dead::after {
-  left: 34px; /* position over right eye */
-}
-
-/* Fade out animation */
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.8);
-  }
-}
-
 /* Stunned zombie style */
 .zombie.stunned {
   background-color: var(--zombie-stunned);
@@ -407,6 +346,12 @@ html, body {
   box-shadow:
     inset 0 -3px 6px #a02828,
     inset -5px 0 4px rgba(200,100,100,0.8);
+}
+
+/* Zombie flying away animation */
+@keyframes zombieFly {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(200px, -150px) rotate(720deg); opacity: 0; }
 }
 
 /* Power-up */
@@ -422,19 +367,27 @@ html, body {
   box-shadow: 0 0 8px var(--powerup-color);
 }
 
-/* Score, Timer, Kills, Level */
+/* Score, Timer, Kills, Level with improved spacing and button-like style */
 .score, .timer, .kills, .level {
   position: absolute;
-  font-size: 24px;
-  color: #333;
-  z-index: 10;
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  background: #4dd0e1;
+  padding: 8px 20px;
+  border-radius: 50px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   user-select: none;
-  text-shadow: 1px 1px 0 white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  white-space: nowrap;
 }
 
 .score { top: 10px; left: 10px; }
-.kills { top: 10px; left: 220px; } /* increased spacing */
-.level { top: 10px; left: 420px; } /* increased spacing */
+.kills { top: 10px; left: 190px; } /* adjusted spacing */
+.level { top: 10px; left: 370px; } /* adjusted spacing */
 .timer { top: 10px; right: 10px; }
 
 /* Messages */
@@ -447,7 +400,7 @@ html, body {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 15;
-  background: rgba(255 255 255 / 0.9);
+  background: rgba(255, 255, 255, 0.9);
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 0 15px #d32f2f;
@@ -488,21 +441,14 @@ button:disabled {
   background: #a0cfd9;
   cursor: not-allowed;
 }
-
-/* Penguin jump animation */
-@keyframes jumpUp {
-  0% { bottom: 60px; }
-  50% { bottom: 140px; }
-  100% { bottom: 60px; }
-}
 </style>
 </head>
 <body>
 
-<div class="left-mountain"></div>
-<div class="back-mountain"></div>
-<div class="sun"></div>
-<div class="penguin" id="penguin" title="Your Penguin">
+<div class="left-mountain" aria-hidden="true"></div>
+<div class="back-mountain" aria-hidden="true"></div>
+<div class="sun" aria-hidden="true"></div>
+<div class="penguin" id="penguin" title="Your Penguin" tabindex="0" role="img" aria-label="Player penguin character">
   <div class="penguin-head">
     <div class="face left"></div>
     <div class="face right"></div>
@@ -521,17 +467,17 @@ button:disabled {
     <div class="foot right"></div>
   </div>
 </div>
-<div class="ground"></div>
-<div class="score" id="score">Score: 0</div>
-<div class="kills" id="kills">Zombies Stunned: 0</div>
-<div class="level" id="level">Level: 1</div>
-<div class="timer" id="timer">300</div>
-<div class="game-over" id="gameOver">Game Over! 🐧</div>
+<div class="ground" aria-hidden="true"></div>
+<div class="score" id="score" aria-live="polite" aria-atomic="true" role="status">Score: 0</div>
+<div class="kills" id="kills" aria-live="polite" aria-atomic="true" role="status">Zombies Stunned: 0</div>
+<div class="level" id="level" aria-live="polite" aria-atomic="true" role="status">Level: 1</div>
+<div class="timer" id="timer" aria-live="polite" aria-atomic="true" role="status">300</div>
+<div class="game-over" id="gameOver" role="alert" aria-live="assertive">Game Over! 🐧</div>
 
 <div class="button-container">
-  <button id="jumpButton" disabled>Jump</button>
-  <button id="attackButton" disabled>Attack Zombie</button>
-  <button id="startButton">Start Game</button>
+  <button id="jumpButton" disabled aria-label="Make the penguin jump">Jump</button>
+  <button id="attackButton" disabled aria-label="Attack nearby zombies">Attack Zombie</button>
+  <button id="startButton" aria-label="Start or restart the game">Start Game</button>
 </div>
 
 <script>
@@ -545,30 +491,33 @@ button:disabled {
   const attackButton = document.getElementById('attackButton');
   const levelDisplay = document.getElementById('level');
 
-  let timer = 300; // 5 minutes in seconds
+  let timer = 300; // 5 minutes
   let score = 0;
   let kills = 0;
   let level = 1;
   let gameInterval;
   let spawnInterval;
-  let penguinBottom = 60;
   let isJumping = false;
   let isInvincible = false;
   let jumpHeight = 80;
   let powerupTimeouts = [];
+  let attackPowerBoost = false;
+  let scoreMultiplierActive = false;
+
+  // Ally penguins array
+  let allyPenguins = [];
 
   // Objects currently on screen
   let fishes = [];
   let zombies = [];
   let powerups = [];
 
-  // Game Settings
-  const baseZombieSpeed = 3;  // slower start
+  const baseZombieSpeed = 3;
   let zombieSpeedMultiplier = 1;
 
-  // Sound effects (simple beeps using Web Audio API)
   const soundCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playBeep(freq=440, duration=150){
+    if(soundCtx.state === 'suspended') soundCtx.resume();
     const osc = soundCtx.createOscillator();
     const gainNode = soundCtx.createGain();
     osc.connect(gainNode);
@@ -583,15 +532,16 @@ button:disabled {
   function startGame() {
     score = 0;
     kills = 0;
-    timer = 300; // 5 minutes
+    timer = 300;
     level = 1;
     updateLevel();
-    penguinBottom = 60;
     isInvincible = false;
     jumpHeight = 80;
     clearPowerups();
+    clearAllies();
     penguin.classList.remove('invincible');
-    penguin.style.bottom = penguinBottom + 'px';
+    penguin.style.bottom = '60px';
+    penguin.style.transform = 'translateX(0)';
     scoreBoard.textContent = "Score: 0";
     killsBoard.textContent = "Zombies Stunned: 0";
     timerDisplay.textContent = timer;
@@ -600,7 +550,6 @@ button:disabled {
     jumpButton.disabled = false;
     attackButton.disabled = false;
 
-    // Clean up objects
     fishes.forEach(f => f.remove());
     zombies.forEach(z => z.remove());
     powerups.forEach(p => p.remove());
@@ -611,15 +560,15 @@ button:disabled {
     gameInterval = setInterval(() => {
       timer--;
       timerDisplay.textContent = timer;
-      if(timer % 10 === 0 && timer > 0) {
+      if(timer % 60 === 0 && timer > 0) {
         increaseDifficulty();
       }
       if (timer <= 0) {
-        endGame(false);
+        endGame(false, "Time's up! 🐧");
       }
     }, 1000);
 
-    spawnInterval = setInterval(spawnObjects, 1000);
+    spawnInterval = setInterval(spawnObjects, 900);
   }
 
   function updateLevel() {
@@ -636,23 +585,46 @@ button:disabled {
   function clearPowerups() {
     powerupTimeouts.forEach(t => clearTimeout(t));
     powerupTimeouts = [];
+    attackPowerBoost = false;
+    isInvincible = false;
+    scoreMultiplierActive = false;
+    penguin.classList.remove('invincible');
+  }
+
+  function clearAllies() {
+    allyPenguins.forEach(ally => {
+      if(ally.attackInterval) clearInterval(ally.attackInterval);
+      if(ally.parentElement) ally.remove();
+    });
+    allyPenguins = [];
   }
 
   function spawnObjects() {
+    const powerupTypesBase = ['jump','invincible','attackBoost','scoreMultiplier'];
+    const powerupTypes = level >= 20 ? [...powerupTypesBase, 'allyPenguin'] : powerupTypesBase;
     const spawnType = Math.random();
+
+    // Spawn ally penguin at level 10 and 20 (only once each)
+    if (level === 10 && !allyPenguins.some(() => true)) {
+      spawnAllyPenguin();
+    }
+    if (level === 20 && allyPenguins.length < 2) {
+      spawnAllyPenguin();
+    }
+    
     if (spawnType < 0.55) {
       spawnFishObject();
     } else if (spawnType < 0.85) {
       spawnZombieObject();
     } else {
-      spawnPowerUp();
+      spawnPowerUp(powerupTypes);
     }
   }
 
   function spawnFishObject() {
     const fish = document.createElement('div');
     fish.classList.add('fish');
-    fish.style.bottom = `${Math.random() * 150 + 60}px`;
+    fish.style.bottom = (Math.random() * 150 + 60) + 'px';
     fish.style.left = '100%';
     document.body.appendChild(fish);
     fishes.push(fish);
@@ -667,20 +639,20 @@ button:disabled {
     zombie.dataset.bobDirection = 'down';
     zombie.dataset.bobPosition = 0;
     zombie.dataset.stunned = 'false';
-    zombie.dataset.type = 0;
     zombie.dataset.speed = baseZombieSpeed * zombieSpeedMultiplier;
     document.body.appendChild(zombie);
     zombies.push(zombie);
     moveObject(zombie, 'zombie');
   }
 
-  function spawnPowerUp() {
+  function spawnPowerUp(powerupTypes) {
+    const powerupType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
     const powerup = document.createElement('div');
     powerup.classList.add('powerup');
-    powerup.style.bottom = `${Math.random() * 120 + 60}px`;
+    powerup.style.bottom = (Math.random() * 120 + 60) + 'px';
     powerup.style.left = '100%';
-    powerup.dataset.type = ['jump','invincible','attackBoost'][Math.floor(Math.random() * 3)];
-    powerup.title = "Power-up: " + powerup.dataset.type.charAt(0).toUpperCase() + powerup.dataset.type.slice(1);
+    powerup.dataset.type = powerupType;
+    powerup.title = "Power-up: " + powerupType.charAt(0).toUpperCase() + powerupType.slice(1);
     document.body.appendChild(powerup);
     powerups.push(powerup);
     moveObject(powerup, 'powerup');
@@ -702,30 +674,24 @@ button:disabled {
         return;
       }
 
-      if (type === 'zombie' && obj.dataset.stunned === 'false') {
+      if(type === 'zombie' && obj.dataset.stunned === 'false') {
         let bobPos = parseFloat(obj.dataset.bobPosition);
         let direction = obj.dataset.bobDirection;
         const bobMax = 8;
         const bobSpeed = 0.5;
-        if (direction === 'down') {
+        if(direction === 'down') {
           bobPos += bobSpeed;
-          if (bobPos >= bobMax) obj.dataset.bobDirection = 'up';
+          if(bobPos >= bobMax) obj.dataset.bobDirection = 'up';
         } else {
           bobPos -= bobSpeed;
-          if (bobPos <= 0) obj.dataset.bobDirection = 'down';
+          if(bobPos <= 0) obj.dataset.bobDirection = 'down';
         }
         obj.dataset.bobPosition = bobPos;
         obj.style.transform = `translateY(${bobPos}px)`;
-
-        const speed = parseFloat(obj.dataset.speed) || baseZombieSpeed * zombieSpeedMultiplier;
-        obj.style.left = (left - speed) + 'px';
-
-      } else if(type === 'powerup') {
-        obj.style.left = (left - 4) + 'px';
-
-      } else {
-        obj.style.left = (left - 3) + 'px';
       }
+
+      const speed = (type === 'zombie' ? parseFloat(obj.dataset.speed) : (type === 'powerup' ? 4 : 3));
+      obj.style.left = (left - speed) + 'px';
 
       const objRect = obj.getBoundingClientRect();
       const penguinRect = penguin.getBoundingClientRect();
@@ -737,18 +703,18 @@ button:disabled {
         objRect.bottom > penguinRect.top
       ) {
         if (type === 'fish') {
-          score++;
+          let gainedScore = 1;
+          if(scoreMultiplierActive) gainedScore = 2;
+          score += gainedScore;
           scoreBoard.textContent = "Score: " + score;
           playBeep(660, 100);
           obj.remove();
           fishes = fishes.filter(f => f !== obj);
           clearInterval(moveInterval);
-          if (score >= 10) {
-            increaseDifficulty();
-          }
-        } else if (type === 'zombie') {
+          if (score >= 10) increaseDifficulty();
+        } else if(type === 'zombie') {
           if (obj.dataset.stunned === 'false' && !isInvincible) {
-            endGame(false, "Caught by a zombie! ☠️");
+            endGame(false, 'Caught by a zombie! ☠️');
           }
         } else if(type === 'powerup') {
           applyPowerup(obj.dataset.type);
@@ -762,64 +728,68 @@ button:disabled {
   }
 
   function applyPowerup(type) {
+    clearPowerups();
     switch(type) {
       case 'jump':
         jumpHeight = 160;
-        setTimeout(() => {
-          jumpHeight = 80;
-        }, 10000);
+        powerupTimeouts.push(setTimeout(() => { jumpHeight = 80; }, 10000));
         break;
       case 'invincible':
         isInvincible = true;
         penguin.classList.add('invincible');
-        setTimeout(() => {
+        powerupTimeouts.push(setTimeout(() => {
           isInvincible = false;
           penguin.classList.remove('invincible');
-        }, 7000);
+        }, 7000));
         break;
       case 'attackBoost':
         attackPowerBoost = true;
-        setTimeout(() => {
+        powerupTimeouts.push(setTimeout(() => {
           attackPowerBoost = false;
-        }, 7000);
+        }, 7000));
+        break;
+      case 'scoreMultiplier':
+        scoreMultiplierActive = true;
+        powerupTimeouts.push(setTimeout(() => { scoreMultiplierActive = false; }, 7000));
+        break;
+      case 'allyPenguin':
+        spawnAllyPenguin();
         break;
     }
   }
 
-  let attackPowerBoost = false;
+  function spawnAllyPenguin() {
+    const ally = document.createElement('div');
+    ally.classList.add('penguin');
+    ally.style.width = '100px';
+    ally.style.height = '100px';
+    ally.style.bottom = '60px';
+    ally.style.left = (parseFloat(window.getComputedStyle(penguin).left) + 120 + Math.random() * 20) + 'px';
+    ally.style.zIndex = 4;
+    ally.setAttribute('aria-label', 'Ally penguin assisting player');
+    document.body.appendChild(ally);
+    allyPenguins.push(ally);
 
-  function jump() {
-    if (isJumping) return;
-    isJumping = true;
-
-    const upHeight = jumpHeight;
-
-    const startBottom = penguinBottom;
-    const peakBottom = startBottom + upHeight;
-
-    penguin.style.bottom = peakBottom + 'px';
-    playBeep(1000, 150);
-    setTimeout(() => {
-      penguin.style.bottom = startBottom + 'px';
-      setTimeout(() => {
-        isJumping = false;
-      }, 300);
-    }, 300);
+    ally.attackInterval = setInterval(() => {
+      if(!document.body.contains(ally)) {
+        clearInterval(ally.attackInterval);
+        return;
+      }
+      allyAttack(ally);
+    }, 1500);
   }
 
-  function attack() {
-    if (isJumping) return;
-
-    const penguinRect = penguin.getBoundingClientRect();
+  function allyAttack(ally) {
+    const allyRect = ally.getBoundingClientRect();
     const attackRange = 140;
 
     const attackableZombies = zombies.filter(z => {
-      if (z.dataset.stunned === 'true' || z.classList.contains('dead')) return false;
+      if(z.dataset.stunned === 'true') return false;
       const zRect = z.getBoundingClientRect();
       return (
-        zRect.left > penguinRect.right &&
-        zRect.left - penguinRect.right <= attackRange &&
-        !(zRect.bottom < penguinRect.top || zRect.top > penguinRect.bottom)
+        zRect.left > allyRect.right &&
+        zRect.left - allyRect.right <= attackRange &&
+        !(zRect.top > allyRect.bottom || zRect.bottom < allyRect.top)
       );
     });
 
@@ -831,34 +801,103 @@ button:disabled {
       return currDist < prevDist ? curr : prev;
     });
 
-    dieZombie(nearestZombie);
-    playBeep(1200, 150);
+    stunZombie(nearestZombie);
 
-    penguin.style.transform = 'scale(1.1)';
+    ally.style.transition = 'transform 0.2s ease';
+    ally.style.transform = 'scale(1.1)';
     setTimeout(() => {
-      penguin.style.transform = 'scale(1)';
+      ally.style.transform = 'scale(1)';
     }, 200);
   }
 
-  function dieZombie(zombie) {
-    if(zombie.classList.contains('dead')) return;
+  function jump() {
+    if(isJumping) return;
+    isJumping = true;
+    playBeep(1000, 150);
+
+    penguin.style.transition = 'bottom 0.3s ease, transform 0.6s ease';
+    const moveDistance = 50;
+
+    penguin.style.bottom = (60 + jumpHeight) + 'px';
+    penguin.style.transform = `translateX(${moveDistance}px)`;
+
+    setTimeout(() => {
+      penguin.style.bottom = '60px';
+      penguin.style.transform = 'translateX(0)';
+    }, 600);
+
+    setTimeout(() => { isJumping = false; }, 700);
+  }
+
+  function attack() {
+    if(isJumping) return;
+
+    const penguinRect = penguin.getBoundingClientRect();
+    const attackRange = 140;
+
+    const attackableZombies = zombies.filter(z => {
+      if(z.dataset.stunned === 'true') return false;
+      const zRect = z.getBoundingClientRect();
+      return (
+        zRect.left > penguinRect.right &&
+        zRect.left - penguinRect.right <= attackRange &&
+        !(zRect.top > penguinRect.bottom || zRect.bottom < penguinRect.top)
+      );
+    });
+
+    if(attackableZombies.length === 0) return;
+
+    const nearestZombie = attackableZombies.reduce((prev, curr) => {
+      const prevDist = parseFloat(prev.style.left) || 1000;
+      const currDist = parseFloat(curr.style.left) || 1000;
+      return currDist < prevDist ? curr : prev;
+    });
+
+    stunZombie(nearestZombie);
+    playBeep(1200, 150);
+
+    penguin.style.transform = 'scale(1.1) translateX(10px)';
+    setTimeout(() => {
+      penguin.style.transform = 'scale(1) translateX(0)';
+    }, 200);
+  }
+
+  function stunZombie(zombie) {
+    if(zombie.dataset.stunned === 'true') return;
     zombie.dataset.stunned = 'true';
-    zombie.classList.add('dead');
+    zombie.classList.add('stunned');
     kills++;
     killsBoard.textContent = "Zombies Stunned: " + kills;
-    
-    setTimeout(() => {
-      if(zombie.parentElement){
-        zombie.remove();
-        zombies = zombies.filter(z => z !== zombie);
-      }
-    }, 1000);
+
+    zombie.style.transition = 'transform 1s ease-out, opacity 1s ease-out';
+    zombie.style.transform = 'translate(200px, -150px) rotate(720deg)';
+    zombie.style.opacity = '0';
+
+    if(attackPowerBoost) {
+      setTimeout(() => {
+        if(zombie.parentElement) {
+          zombie.remove();
+          zombies = zombies.filter(z => z !== zombie);
+        }
+      }, 700);
+    } else {
+      setTimeout(() => {
+        if(zombie.parentElement) {
+          zombie.dataset.stunned = 'false';
+          zombie.classList.remove('stunned');
+          zombie.style.opacity = 1;
+          zombie.style.transform = 'translate(0, 0)';
+          zombie.style.transition = '';
+        }
+      }, 5000);
+    }
   }
 
   function endGame(won, reason) {
     clearInterval(gameInterval);
     clearInterval(spawnInterval);
     clearPowerups();
+    clearAllies();
 
     fishes.forEach(f => f.remove());
     zombies.forEach(z => z.remove());
@@ -873,10 +912,9 @@ button:disabled {
     startButton.style.display = 'block';
 
     if(won) {
-      gameOverText.textContent = 'You caught 10 fish! 🎉';
-    }
-    else {
-      gameOverText.textContent = reason || 'Time’s up or caught! 🐧';
+      gameOverText.textContent = 'You won! Final Score: ' + score;
+    } else {
+      gameOverText.textContent = reason || 'Game Over! 🐧 Final Score: ' + score;
     }
   }
 
@@ -885,12 +923,18 @@ button:disabled {
   attackButton.addEventListener('click', attack);
 
   document.body.addEventListener('click', e => {
-    if (!e.target.closest('button') && !e.target.classList.contains('zombie')) {
+    if(!e.target.closest('button') && !e.target.classList.contains('zombie')) {
+      jump();
+    }
+  });
+
+  penguin.addEventListener('keydown', e => {
+    if(e.key === " " || e.key === "Enter") {
+      e.preventDefault();
       jump();
     }
   });
 </script>
 </body>
 </html>
-
 
